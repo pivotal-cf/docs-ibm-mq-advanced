@@ -1,17 +1,27 @@
 ---
-title: Using YOUR-PRODUCT-NAME
+title: Using IBM® MQ Advanced for Developers for PCF
 owner: Partners
 ---
 
 <strong><%= modified_date %></strong>
 
-This topic describes how to use YOUR-PRODUCT-NAME.
+This topic describes how to use IBM MQ Advanced for Developers for PCF.
 
-##<a id='using'></a> Using YOUR-PRODUCT-NAME
+##<a id='using'></a> Using IBM MQ Advanced for Developers for PCF
 
-**This topic should include any instructions for how to use the service or dashboard created by the tile. 
-Give procedures for how to perform the different functions offered by your product and provide screenshots where necessary.** 
+### Accessing the MQ Web Console
 
-**You can also use this section to include information about Architecture and Troubleshooting for known errors. 
-If you include a Troubleshooting section, follow the Symptom/Explanation format used in the 
-[Okta Troubleshooting](http://docs.pivotal.io/p-identity/okta/troubleshooting.html) topic**.
+Once the tile is deployed, one way that you can interact with the Queue Manager is through the MQ Web Console. If the tile 
+was deployed using the default `ClusterIP` node setting, you can use port-forwarding to access the console as follows:
+
+* Run `kubectl port-forward <POD_NAME> 9443:9443 --namespace <NAMESPACE>`
+* Access the web console at https://localhost:9443/ibmmq/console/
+* Default Username: `admin`
+* Password: To retrieve the MQ Web Console password, you can run 
+`kubectl get secret --namespace <NAMESPACE> <SERVICE_NAME> -o jsonpath="{.data.adminPassword}" | base64 --decode; echo`
+
+### Useful Links
+
+* [IBM MQ Version 9.1 documentation](https://www.ibm.com/support/knowledgecenter/SSFKSJ_9.1.0/com.ibm.mq.helphome.v91.doc/WelcomePagev9r1.htm)
+* [Configuring the IBM MQ Console and REST API](https://www.ibm.com/support/knowledgecenter/SSFKSJ_9.1.0/com.ibm.mq.con.doc/q128300_.htm)
+* [Configuring IBM MQ](https://www.ibm.com/support/knowledgecenter/SSFKSJ_9.1.0/com.ibm.mq.con.doc/q015120_.htm)

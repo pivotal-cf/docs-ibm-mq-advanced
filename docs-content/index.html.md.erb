@@ -1,122 +1,103 @@
 ---
-title: YOUR-PRODUCT-NAME (Beta)
+title: IBM® MQ Advanced for Developers for PCF (Beta)
 owner: Partners
 ---
 
 <strong><%= modified_date %></strong>
 
-**If this product is in beta, keep and edit the warning note below.**
 <p class="note warning">
 <strong>Warning: </strong>
-The PRODUCT-NAME for PCF tile is currently in beta and is intended for evaluation and test purposes only. 
+The IBM MQ Advanced for Developers for PCF tile is currently in beta and is intended for evaluation and test purposes only. 
 Do not use this product in a PCF production environment.
 </p>
 
-**This topic begins with a brief description of what the product tile (e.g. Apigee Edge Service Broker for PCF) does, 
-whereas the Overview section below describes what the service itself (e.g. Apigee Edge) does. See below for an example.**
-
-This documentation describes the Apigee Edge Service Broker for Pivotal Cloud Foundry (PCF). The Apigee Edge Service 
-Broker for PCF enables developers to manage APIs for their PCF apps through the Apigee Edge management console.
-
-**Note**: This description will appear under **OVERVIEW** in the tile's listing on 
-[Pivotal Network](http://network.pivotal.io).
+This documentation describes IBM MQ Advanced for Developers for Pivotal Cloud Foundry (PCF). IBM MQ Advanced for Developers 
+for PCF enables users to deploy IBM MQ Queue Managers onto a Pivotal Container Service (PKS) environment.
 
 ## <a id='overview'></a>Overview
 
-**The overview describes the service that your product offers to PCF developers. 
-Make sure to overview the features of the integration.
-Don't focus only on the overview of your product that is being integrated.
-See below for an example.**
-
-The Apigee Edge Service Broker for PCF registers a service broker with PCF and exposes its service plans on the 
-Marketplace. Developers can then create service plan instances using Apps Manager or the Cloud Foundry Command 
-Line Interface (cf CLI) and bind them to their apps.
-
-Creating an Apigee Edge for PCF service instance and binding it to an app creates an Apigee Edge API proxy that 
-handles requests for the app. This lets developers use the Apigee Edge management console to manage API request 
-handling between clients and the app.
-
-**Note**: This overview will appear under **OVERVIEW**, combined with the description above in the tile's listing on 
-[Pivotal Network](http://network.pivotal.io).
+This tile deploys a single IBM MQ Advanced for Developers for PCF server (Queue Manager). IBM MQ is messaging middleware that 
+simplifies and accelerates the integration of diverse applications and business data across multiple platforms. It uses 
+message queues to facilitate the exchanges of information and offers a single messaging solution for cloud, mobile, 
+Internet of Things (IoT), and on-premises environments.
 
 ## <a id='features'></a>Key Features
 
-**Note**: This feature list will appear under **FEATURES** in the tile's listing on 
-[Pivotal Network](http://network.pivotal.io). 
-Make sure you list the key features of the tile (the integration). 
-We cannot accept a list of the key features of your product that we are integrating.
+IBM MQ Advanced for Developers for PCF will do the following:
 
-YOUR-PRODUCT-NAME includes the following key features:
-
-* Feature one
-* Feature two
-* Feature three
-
-
+* Create a single MQ server (Queue Manager) using a StatefulSet with exactly one replica. Kubernetes will ensure that if it fails for some reason, it will be restarted, possibly on a different worker node.
+* Create a Service. This is used to ensure that MQ client applications have a consistent IP address to connect to, regardless of where the Queue Manager is actually running.
+* Create a Secret. This is used to store passwords used for the default developer configuration.
 
 ## <a id="snapshot"></a>Product Snapshot
 
-The following table provides version and version-support information about PRODUCT-NAME.
+The following table provides version and version-support information about IBM MQ Advanced for Developers for PCF.
 
 <table class="nice">
     <th>Element</th>
     <th>Details</th>
     <tr>
         <td>Tile version</td>
-        <td>vYOUR-VERSION-NUMBER</td>
+        <td>v3.0.1</td>
     </tr>
     <tr>
         <td>Release date</td>
-        <td>YOUR-RELEASE-DATE (Ex: July 1, 2019)</td>
+        <td>April 8, 2019</td>
     </tr>
     <tr>
         <td>Software component version</td>
-        <td>YOUR-SOFTWARE-COMPONENT-VERSION-NUMBER</td>
+        <td>9.1.2.0</td>
     </tr>
     <tr>
-        <td>Compatible Ops Manager version(s)</td>
-        <td>YOUR-COMPATIBLE-OPS-MAN-VERSION (Ex. 2.2, 2.3, and 2.4)</td>
-    </tr>
-    <tr>
-        <td>Compatible Pivotal Application Service version(s)</td>
-        <td>YOUR-COMPATIBLE-PIVOTAL-APPLICATION-SERVICE-VERSION (Ex. 2.2, 2.3, and 2.4)</td>
+        <td>Compatible Pivotal Container Service version(s)</td>
+        <td>1.2.0+</td>
     </tr>
     <tr>
        <td>BOSH stemcell version</td>
        <td>Ubuntu Xenial</td>
     </tr>
     <tr>
-        <td>IaaS support</td>
-        <td>AWS?, Azure?, GCP?, OpenStack?, and vSphere?</td>
-    </tr>
-    <tr>
         <td>IPsec support?</td>
-        <td>[Yes or No]</td>
+        <td>No</td>
     </tr>
 </table>
 
-
 ## <a id="reqs"></a>Requirements
 
-**Provide any general or specific requirements, prerequisites, or dependencies here. 
-A general requirement might be something like, "An AppDynamics account." 
-A specific requirement might be something like, "Packaging Dependencies for Offline Buildpacks."**
+IBM MQ Advanced for Developers for PCF has the following requirements:
 
-YOUR-PRODUCT-NAME has the following requirements:
++ When installing PKS, ensure the `Disable DenyEscalatingExec` option is set to true when selecting a plan.
 
-+ PREREQUISITE-1
+### <a id="recourcereqs"></a>Resource Requirements
 
-+ PREREQUISITE-2
+IBM MQ Advanced for Developers for PCF has the following resource requirements:
+
++ 0.5 CPU core
+
++ 0.5 Gi memory
+
++ 2 Gi persistent volume
 
 ## <a id="limitations"></a>Limitations
 
-**List any known limitations.**
+It is not generally recommended that you change the number of replicas in the StatefulSet from the default value of 1. Setting 
+the number of replicas creates multiple Queue Managers.  The recommended way to scale MQ is by deploying this 
+chart multiple times and connecting the Queue Managers together using MQ configuration — see [Architectures based on multiple 
+queue managers](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.0.0/com.ibm.mq.pla.doc/q004720_.htm).  If you choose 
+to set a different number of replicas on the StatefulSet, connections to each Queue Manager will be routed via a single IP 
+address from the Kubernetes Service.  Connections to multiple replicas via a Service are load balanced, typically on a round-robin 
+basis.  If you do this, you need to take great care not to create an affinity between an MQ client and server, because a 
+client might get disconnected, and then re-connect to a different server.  See Chapter 7 of the 
+[IBM MQ as a Service Redpaper](https://www.redbooks.ibm.com/redpapers/pdfs/redp5209.pdf)
+
+It is not recommended to change the number of replicas in the StatefulSet after initial deployment.  This will cause the 
+addition or deletion of Queue Managers, which can result in loss of messages.
 
 ## <a id="feedback"></a>Feedback
 
 If you have a feature request, questions, or information about a bug, please email
-[Pivotal Cloud Foundry Feedback](mailto:cf-feedback@pivotal.io) list or send an email to YOUR-SUPPORT-EMAIL.
+[Pivotal Cloud Foundry Feedback](mailto:cf-feedback@pivotal.io) list.
 
 ## <a id='license'></a>License
 
-**List any license information here.**
+Deploying the IBM MQ Advanced for Developers for PCF tile accepts the [IBM MQ Advanced for Developers for PCF License](http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?la_formnum=Z125-3301-14&li_formnum=L-APIG-AVCJ4S)
