@@ -1,32 +1,145 @@
 ---
-title: Installing and Configuring IBM® MQ Advanced for Developers for PCF
+title: Installing and Configuring IBM® MQ Advanced for Developers for PCF (PKS)
 owner: Partners
 ---
 
 <strong><%= modified_date %></strong>
 
-This topic describes how to install and configure IBM MQ Advanced for Developers for PCF.
+This topic describes how to install and configure IBM MQ Advanced for Developers for PCF on Pivotal Container Service (PKS).
 
-##<a id='install'></a> Install and Configure IBM MQ Advanced for Developers for PCF
+## <a id='download'></a> Download IBM MQ Advanced for Developers for PCF (PKS)
 
-To install the IBM MQ Advanced for Developers for PCF file on the Ops Manager Installation Dashboard, do the following:
+1. Download the IBM MQ Advanced for Developers for PCF Helm chart (`ibm-mqadvanced-server-dev-X.X.X.tgz`)
+1. (Optional) Download the IBM MQ Advanced Server Image (`mqadvanced-server-dev-X.X.X.X-x86_64-ubuntu-XX.XX.tar`) from [Pivotal Network](https://network.pivotal.io/) *(Note that the Helm chart will automatically pull the latest version of the image from Docker Hub)*
 
-1. Download the product file from Pivotal Network.
+## <a id='image'></a> (Optional) Install Image into Private Registry
 
-1. Navigate to the Ops Manager Installation Dashboard and click **Import a Product** to upload the product file. 
+Load the image into Docker, tag it, then push it to your registry (where `<IMAGE_NAME>` is the image downloaded in the optional download step)
 
-1. Under the **Import a Product** button, click **+** next to the version number of IBM MQ Advanced for Developers for PCF. 
-This adds the tile to your staging area.
+```
+$ docker load -i <IMAGE_NAME>.tar
+$ docker tag <IMAGE_NAME>.tar registry.mycompany.com/<IMAGE_NAME>.tar 
+$ docker push registry.mycompany.com/<IMAGE_NAME>.tar 
+```
 
-1. Click the newly added **IBM MQ Advanced for Developers for PCF** tile.
+## <a id='access'></a> Obtain Cluster Access
 
-1. TODO **This portion of the procedure should tell the users how to configure the newly added tile by
-walking them through the sections. Which fields should they fill out? What are the different
-checkboxes? Include relevant screenshots here.** 
+A Pivotal Container Service (PKS) cluster is required to install IBM MQ Advanced for Developers for PCF. To obtain access to your cluster, do the following:
 
-1. Click **Save**.
+1. Log in to PKS: `pks login -a <pks-url> -u <username> -p <password> -k`
+1. Update your `~/.kube/config`: `pks get-credentials <cluster-name>`
+1. Configure your Kubernetes client: `kubectl config use-context <cluster-name>`
 
-1. Return to the Ops Manager Installation Dashboard and click **Apply changes** to install IBM MQ Advanced for Developers for PCF tile.
+## <a id='helm-server'></a> Install Helm Server
+
+IBM MQ Advanced for Developers for PCF is distributed as a Helm chart. To install Helm on your PKS cluster, create a `initialize_helm_rbac.yaml` file as follows:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: tiller
+    namespace: kube-system
+```
+
+Create the service account and cluster role binding (this sets the necessary privileges for Helm with a service account named tiller):
+
+```
+$ kubectl create -f initialize_helm_rbac.yaml
+
+serviceaccount "tiller" created
+clusterrolebinding.rbac.authorization.k8s.io "tiller" created
+```
+
+Initialize Helm with the command:
+
+```
+$ helm init --service-account tiller
+
+$HELM_HOME has been configured at /<path>/.helm.
+```
+
+## <a id='install'></a> Install Helm Chart
+
+Install the chart, specifying the release name (for example `foo`) and Helm repository name (for example `mylocal-repo`) with the following command (where `ibm-mqadvanced-server-dev-X.X.X.tgz` is the Helm chart file downloaded from Pivotal Netwok):
+
+```sh
+helm install --name foo ibm-mqadvanced-server-dev-X.X.X.tgz --set license=accept --set security.initVolumeAsRoot=true
+```
+
+*(Optional) - Set `image.repository`, `image.tag` and `image.pullSecret` to specify an image in a private registry, rather than pulling in the latest image from Docker Hub*
+
+This command accepts the [IBM MQ Advanced for Developers license](http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?la_formnum=Z125-3301-14&li_formnum=L-APIG-AVCJ4S) and deploys an MQ Advanced for Developers server on the PKS cluster. The <a href="#configuration">Configuration</a> section lists the parameters that can be configured during installation.
+
+### <a id='uninstall'></a> Uninstalling the Chart
+
+You can uninstall/delete the `foo` release as follows:
+
+```sh
+helm delete foo
+```
+
+The command removes all the Kubernetes components associated with the chart, except any Persistent Volume Claims (PVCs). This is the default behavior of Kubernetes, and ensures that valuable data is not deleted.
+
+##<a id='configuration'></a> Configuration
+
+The following table lists the configurable parameters of the `ibm-mqadvanced-server-dev` chart and their default values.
+
+| Parameter                       | Description                                                     | Default                                    |
+| ------------------------------- | --------------------------------------------------------------- | ------------------------------------------ |
+| `license`                       | Set to `accept` to accept the terms of the IBM license          | `"not accepted"`                           |
+| `image.repository`              | Image full name including repository                            | `ibmcom/mq`                                |
+| `image.tag`                     | Image tag                                                       | `9.1.2.0`                                  |
+| `image.pullPolicy`              | Image pull policy                                               | `IfNotPresent`                             |
+| `image.pullSecret`              | Image pull secret, if you are using a private Docker registry   | `nil`                                      |
+| `arch.amd64`                    | Preference for installation on worker nodes with the `amd64` CPU architecture.  One of: "0 - Do not use", "1 - Least preferred", "2 - No preference", "3 - Most preferred" | `2 - No preference` - worker node is chosen by scheduler |
+| `arch.ppc64le`                  | Preference for installation on worker nodes with the `ppc64le` CPU architecture.  One of: "0 - Do not use", "1 - Least preferred", "2 - No preference", "3 - Most preferred" | `2 - No preference` - worker node is chosen by scheduler |
+| `arch.s390x`                    | Preference for installation on worker nodes with the `s390x` CPU architecture.  One of: "0 - Do not use", "1 - Least preferred", "2 - No preference", "3 - Most preferred" | `2 - No preference` - worker node is chosen by scheduler |
+| `persistence.enabled`           | Use persistent volumes for all defined volumes                  | `true`                                     |
+| `persistence.useDynamicProvisioning` | Use dynamic provisioning (storage classes) for all volumes | `true`                                     |
+| `dataPVC.name`                  | Suffix for the PVC name                                         | `"data"`                                   |
+| `dataPVC.storageClassName`      | Storage class of volume for main MQ data (under `/var/mqm`)     | `""`                                       |
+| `dataPVC.size`                  | Size of volume for main MQ data (under `/var/mqm`)              | `2Gi`                                      |
+| `service.type`                  | Kubernetes service type exposing ports, e.g. `NodePort`         | `ClusterIP`                                |
+| `metrics.enabled`               | Enable Prometheus metrics for the Queue Manager                 | `true`                                     |
+| `resources.limits.cpu`          | Kubernetes CPU limit for the Queue Manager container            | `500m`                                     |
+| `resources.limits.memory`       | Kubernetes memory limit for the Queue Manager container         | `512Mi`                                    |
+| `resources.requests.cpu`        | Kubernetes CPU request for the Queue Manager container          | `500m`                                     |
+| `resources.requests.memory`     | Kubernetes memory request for the Queue Manager container       | `512Mi`                                    |
+| `security.serviceAccountName`   | Name of the service account to use                              | `default`                                  |
+| `security.context.fsGroup`      | File system group ID (if required by storage provider)          | `nil`                                      |
+| `security.context.supplementalGroups` | List of supplemental groups (if required by storage provider) | `nil`                                  |
+| `security.initVolumeAsRoot`     | Whether or not storage provider requires root permissions to initialize | `false`                            |
+| `queueManager.name`             | MQ Queue Manager name                                           | Helm release name                          |
+| `queueManager.dev.adminPassword` | Developer defaults - administrator password                    | Random generated string.  See the notes that appear when you install for how to retrieve this. |
+| `queueManager.dev.appPassword`  | Developer defaults - app password                               | `nil` (no password required to connect an MQ client) |
+| `nameOverride`                  | Set to partially override the resource names used in this chart | `ibm-mq`                                   |
+| `livenessProbe.initialDelaySeconds` | The initial delay before starting the liveness probe. Useful for slower systems that take longer to start the Queue Manager. | 60 |
+| `livenessProbe.periodSeconds`   | How often to run the probe                                      | 10                                         |
+| `livenessProbe.timeoutSeconds`  | Number of seconds after which the probe times out               | 5                                          |
+| `livenessProbe.failureThreshold` | Minimum consecutive failures for the probe to be considered failed after having succeeded | 1               |
+| `readinessProbe.initialDelaySeconds` | The initial delay before starting the readiness probe      | 10                                         |
+| `readinessProbe.periodSeconds`  | How often to run the probe                                      | 5                                          |
+| `readinessProbe.timeoutSeconds` | Number of seconds after which the probe times out               | 3                                          |
+| `readinessProbe.failureThreshold` | Minimum consecutive failures for the probe to be considered failed after having succeeded | 1              |
+| `log.format`                    | Error log format on container's console.  Either `json` or `basic` | `basic`                                 |
+
+Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
+
+Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart.
 
 <!-- **If needed, include additional configuration information below. For example, maybe there are
 configuration options not required for installation but which could be useful for certain users.** -->
