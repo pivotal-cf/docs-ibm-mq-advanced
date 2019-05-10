@@ -83,7 +83,9 @@ IBM MQ Advanced for Developers for PCF has the following resource requirements:
 It is not generally recommended that you change the number of replicas in the StatefulSet from the default value of 1. Setting 
 the number of replicas creates multiple Queue Managers.  The recommended way to scale MQ is by deploying this 
 chart multiple times and connecting the Queue Managers together using MQ configuration — see [Architectures based on multiple 
-queue managers](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.0.0/com.ibm.mq.pla.doc/q004720_.htm).  If you choose 
+queue managers](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.0.0/com.ibm.mq.pla.doc/q004720_.htm).  
+
+If you choose 
 to set a different number of replicas on the StatefulSet, connections to each Queue Manager will be routed via a single IP 
 address from the Kubernetes Service.  Connections to multiple replicas via a Service are load balanced, typically on a round-robin 
 basis.  If you do this, you need to take great care not to create an affinity between an MQ client and server, because a 
