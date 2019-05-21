@@ -10,9 +10,11 @@ This topic describes how to install and configure IBM MQ Advanced for Developers
 ## <a id='download'></a> Download IBM MQ Advanced for Developers for PCF (PKS)
 
 1. Download the IBM MQ Advanced for Developers for PCF Helm chart (`ibm-mqadvanced-server-dev-X.X.X.tgz`)
-1. (Optional) Download the IBM MQ Advanced Server Image (`mqadvanced-server-dev-X.X.X.X-x86_64-ubuntu-XX.XX.tar`) from [Pivotal Network](https://network.pivotal.io/) *(Note that the Helm chart will automatically pull the latest version of the image from Docker Hub)*
+1. (Optional) Download the IBM MQ Advanced Server Image (`mqadvanced-server-dev-X.X.X.X-x86_64-ubuntu-XX.XX.tar`) 
+from [Pivotal Network](https://network.pivotal.io/) 
+<p class="note"><strong>Note:</strong> The Helm chart will automatically pull the latest version of the image from Docker Hub
 
-## <a id='image'></a> (Optional) Install Image into Private Registry
+## <a id='image'></a> Install Image into Private Registry (Optional)
 
 Load the image into Docker, tag it, then push it to your registry (where `<IMAGE_NAME>` is the image downloaded in the optional download step)
 
