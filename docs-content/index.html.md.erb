@@ -25,9 +25,8 @@ Internet of Things (IoT), and on-premises environments.
 
 IBM MQ Advanced for Developers for PCF will do the following:
 
-* Create a single MQ server (Queue Manager) using a StatefulSet with exactly one replica. Kubernetes will ensure that if it fails for some reason, it will be restarted, possibly on a different worker node.
-* Create a Service. This is used to ensure that MQ client applications have a consistent IP address to connect to, regardless of where the Queue Manager is actually running.
-* Create a Secret. This is used to store passwords used for the default developer configuration.
+* Create a single MQ server (Queue Manager) using a [StatefulSet](http://kubernetes.io/docs/concepts/abstractions/controllers/statefulsets/) with exactly one replica.  Kubernetes will ensure that if it fails for some reason, it will be restarted, possibly on a different worker node.
+* Create a [Service](https://kubernetes.io/docs/concepts/services-networking/service/). This is used to ensure that MQ client applications have a consistent IP address to connect to, regardless of where the Queue Manager is actually running.
 
 ## <a id="snapshot"></a>Product Snapshot
 
@@ -38,11 +37,11 @@ The following table provides version and version-support information about IBM M
     <th>Details</th>
     <tr>
         <td>Version</td>
-        <td>v3.0.1</td>
+        <td>v4.0.0</td>
     </tr>
     <tr>
         <td>Release date</td>
-        <td>May 31, 2019</td>
+        <td>July 1, 2019</td>
     </tr>
     <tr>
         <td>Software component version</td>

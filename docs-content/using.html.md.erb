@@ -7,18 +7,68 @@ owner: Partners
 
 This topic describes how to use IBM MQ Advanced for Developers for PCF.
 
-##<a id='using'></a> Using IBM MQ Advanced for Developers for PCF
+## <a id='using'></a> Using IBM MQ Advanced for Developers for PCF
 
 ### Accessing the MQ Web Console
 
-Once the integration is deployed, one way that you can interact with the Queue Manager is through the MQ Web Console. If the integration 
-was deployed using the default `ClusterIP` node setting, you can use port-forwarding to access the console as follows:
+The MQ Advanced for Developers image includes the MQ web server.  The web server runs the web console, and the MQ REST APIs.  By default, the MQ server deployed by this chart is accessible via a `ClusterIP` [Service](https://kubernetes.io/docs/concepts/services-networking/service/), which is only accessible from within the Kubernetes cluster.  
 
-* Run `kubectl port-forward <POD_NAME> 9443:9443 --namespace <NAMESPACE>`
-* Access the web console at https://localhost:9443/ibmmq/console/
-* Default Username: `admin`
-* Password: To retrieve the MQ Web Console password, you can run 
-`kubectl get secret --namespace <NAMESPACE> <SERVICE_NAME> -o jsonpath="{.data.adminPassword}" | base64 --decode; echo`
+If you want to access the web console from a web browser, then you need to select a different type of Service.  For example, a `NodePort` service will expose the web console port on each worker node.
+
+### Supplying certificates to be used for TLS
+
+The `pki.trust` and `pki.keys` allow you to supply details of Kubernetes secrets that contain TLS certificates. By doing so the TLS certificates will be imported into the container at runtime and MQ will be configured to use them. You can supply both Certificiates which contain only a public key and certificiates that contain both public and private keys. 
+
+If you supply invalid files or invalid YAML objects then the container will terminate with an appropriate termination message. The next 2 sections will detail the requirements for supplying each type of certificate.
+
+#### Supplying certificates which contain the public and private keys
+When supplying a Kubernetes secret that contains a certificate files for both the public and private key you must ensure that the secret contains a file that ends in `.crt` and a file that ends in `.key` named the same. For example: `tls.crt` and `tls.key`. The extension of the file denotes whether the file is the public key (`.crt`) or the private key (`.key`) and must be correct. If your certificate has been issued by a Certificate Authority, then the certificate from the CA must be included as a seperate file with the `.crt` extension. For example: `ca.crt`.
+
+The format of the YAML objects for `pki.keys` value is as follows:
+
+```YAML
+- name: mykeys
+  secret:
+    secretName: mykeysecret
+    items:
+      - tls.key
+      - tls.crt
+      - ca.crt
+```
+
+or alternatively in a single line you can supply the following: `- name: mykeys, secret: {secretName: mykeysecret, items: [tls.key, tls.crt, ca.crt]}`
+
+`name` must be set to a lowercase alphanumeric value and will be used as the label for the certificate in the keystore and queue manager. 
+
+`secret.secretName` must match the name of a Kubernetes secret that contains the TLS certificates you wish to import
+
+`secret.items` must list the TLS certificate files contained in `secret.secretName` you want to import.
+
+To supply the YAML objects when deploying via Helm you should use the following: `--set pki.keys[0].name=mykeys,pki.keys[0].secret.secretName=mykeysecret,pki.keys[0].secret.items[0]=tls.key,pki.keys[0].secret.items[1]=tls.crt,pki.keys[0].secret.items[2]=ca.crt`
+
+If you supply multiple YAML objects then the queue manager will use the first object choosen by the label name alphabetically. For example if you supply the following labels: `alabel`, `blabel` and `clabel`. The queue manager and MQ Console will use the certificate with the label `alabel` for it's identity. In this queue manager this can be changed by running the MQSC command: `ALTER QMGR CERTLABL('<new label>')`.
+
+#### Supplying certficates which contain only the public key
+When supplying a Kubernetes secret that contains a certificate file with only the public key you must ensure that the secret contains files that have the extension `.crt`. For example: `tls.crt` and `ca.crt`. 
+
+The format of the YAML objects for `pki.trust` value is as follows:
+
+```YAML
+- secret:
+    secretName: mycertificate
+    items:
+      - tls.crt
+```
+
+or alternatively in a single line you can supply the following: `- secret: {secretName: mycertificate, items: [tls.crt]}`
+
+`secret.secretName` must match the name of a Kubernetes secret that contains the TLS certificates you wish to add.
+
+`secret.items` must list the TLS certificate files contained in `secret.secretName` you want to add.
+
+To supply the YAML objects when deploying via Helm you should use the following: `--set pki.trust[0].secret.secretName=mycertificate,pki.trust[0].secret.items[0]=tls.crt`
+
+If you supply multiple YAML objects then all of the certificates specified will be added into the queue managers and MQ Console Truststore.
 
 ### Useful Links
 
