@@ -10,7 +10,7 @@ This topic describes how to install and configure IBM MQ Advanced for Developers
 ## <a id='download'></a> Download IBM MQ Advanced for Developers for PCF (PKS)
 
 1. Download the IBM MQ Advanced for Developers for PCF Helm chart (`ibm-mqadvanced-server-dev-X.X.X.tgz`)
-1. (Optional) Download the IBM MQ Advanced Server Image (`mqadvanced-server-dev-X.X.X.X-x86_64-ubuntu-XX.XX.tar`) 
+2. (Optional) Download the IBM MQ Advanced Server Image (`mqadvanced-server-dev-X.X.X.X-amd64.tar`) 
 from [Pivotal Network](https://network.pivotal.io/) 
 <p class="note"><strong>Note:</strong> The Helm chart will automatically pull the latest version of the image from Docker Hub
 
@@ -79,8 +79,14 @@ $HELM_HOME has been configured at /<path>/.helm.
 Install the chart, specifying the release name (for example `foo`) and Helm repository name (for example `mylocal-repo`) with the following command (where `ibm-mqadvanced-server-dev-X.X.X.tgz` is the Helm chart file downloaded from Pivotal Netwok):
 
 ```sh
-helm install --name foo ibm-mqadvanced-server-dev-X.X.X.tgz --set license=accept --set security.initVolumeAsRoot=true
+helm install --name foo ibm-mqadvanced-server-dev-X.X.X.tgz \
+  --set license=accept \
+  --set security.initVolumeAsRoot=true \
+  --set queueManager.dev.secret.name=mysecret \
+  --set queueManager.dev.secret.adminPasswordKey=adminPassword
 ```
+
+This example assumes that you have created a Secret `mysecret`, containing a key `adminPassword` with your admin password.
 
 *(Optional) - Set `image.repository`, `image.tag` and `image.pullSecret` to specify an image in a private registry, rather than pulling in the latest image from Docker Hub*
 
@@ -96,7 +102,7 @@ helm delete foo
 
 The command removes all the Kubernetes components associated with the chart, except any Persistent Volume Claims (PVCs). This is the default behavior of Kubernetes, and ensures that valuable data is not deleted.
 
-##<a id='configuration'></a> Configuration
+## <a id='configuration'></a> Configuration
 
 The following table lists the configurable parameters of the `ibm-mqadvanced-server-dev` chart and their default values.
 
@@ -104,17 +110,26 @@ The following table lists the configurable parameters of the `ibm-mqadvanced-ser
 | ------------------------------- | --------------------------------------------------------------- | ------------------------------------------ |
 | `license`                       | Set to `accept` to accept the terms of the IBM license          | `"not accepted"`                           |
 | `image.repository`              | Image full name including repository                            | `ibmcom/mq`                                |
-| `image.tag`                     | Image tag                                                       | `9.1.2.0`                                  |
+| `image.tag`                     | Image tag                                                       | `9.1.2.0-UBI`                              |
 | `image.pullPolicy`              | Image pull policy                                               | `IfNotPresent`                             |
 | `image.pullSecret`              | Image pull secret, if you are using a private Docker registry   | `nil`                                      |
 | `arch.amd64`                    | Preference for installation on worker nodes with the `amd64` CPU architecture.  One of: "0 - Do not use", "1 - Least preferred", "2 - No preference", "3 - Most preferred" | `2 - No preference` - worker node is chosen by scheduler |
 | `arch.ppc64le`                  | Preference for installation on worker nodes with the `ppc64le` CPU architecture.  One of: "0 - Do not use", "1 - Least preferred", "2 - No preference", "3 - Most preferred" | `2 - No preference` - worker node is chosen by scheduler |
 | `arch.s390x`                    | Preference for installation on worker nodes with the `s390x` CPU architecture.  One of: "0 - Do not use", "1 - Least preferred", "2 - No preference", "3 - Most preferred" | `2 - No preference` - worker node is chosen by scheduler |
+| `metadata.labels`               | Additional labels to be added to resources                      | `{}`                                       |
 | `persistence.enabled`           | Use persistent volumes for all defined volumes                  | `true`                                     |
 | `persistence.useDynamicProvisioning` | Use dynamic provisioning (storage classes) for all volumes | `true`                                     |
-| `dataPVC.name`                  | Suffix for the PVC name                                         | `"data"`                                   |
+| `dataPVC.name`                  | Suffix for the PVC name for main MQ data (under `/var/mqm`)     | `"data"`                                   |
 | `dataPVC.storageClassName`      | Storage class of volume for main MQ data (under `/var/mqm`)     | `""`                                       |
 | `dataPVC.size`                  | Size of volume for main MQ data (under `/var/mqm`)              | `2Gi`                                      |
+| `logPVC.enabled`                | Whether or not to use separate storage for transaction logs     | `false`                                    |
+| `logPVC.name`                   | Suffix for the PVC name for transaction logs                    | `"log"`                                    |
+| `logPVC.storageClassName`       | Storage class of volume for transaction logs                    | `""`                                       |
+| `logPVC.size`                   | Size of volume for transaction logs                             | `2Gi`                                      |
+| `qmPVC.enabled`                 | Whether or not to use separate storage for queue manager data   | `false`                                    |
+| `qmPVC.name`                    | Suffix for the PVC name for queue manager data                  | `"qm"`                                     |
+| `qmPVC.storageClassName`        | Storage class of volume for queue manager data                  | `""`                                       |
+| `qmPVC.size`                    | Size of volume for queue manager data                           | `2Gi`                                      |
 | `service.type`                  | Kubernetes service type exposing ports, e.g. `NodePort`         | `ClusterIP`                                |
 | `metrics.enabled`               | Enable Prometheus metrics for the Queue Manager                 | `true`                                     |
 | `resources.limits.cpu`          | Kubernetes CPU limit for the Queue Manager container            | `500m`                                     |
@@ -126,8 +141,12 @@ The following table lists the configurable parameters of the `ibm-mqadvanced-ser
 | `security.context.supplementalGroups` | List of supplemental groups (if required by storage provider) | `nil`                                  |
 | `security.initVolumeAsRoot`     | Whether or not storage provider requires root permissions to initialize | `false`                            |
 | `queueManager.name`             | MQ Queue Manager name                                           | Helm release name                          |
-| `queueManager.dev.adminPassword` | Developer defaults - administrator password                    | Random generated string.  See the notes that appear when you install for how to retrieve this. |
-| `queueManager.dev.appPassword`  | Developer defaults - app password                               | `nil` (no password required to connect an MQ client) |
+| `queueManager.multiInstance`    | Whether to run in multi-instance mode with an active and standby queue manager | `false`                     |
+| `queueManager.dev.secret.name`  | Secret that contains the 'admin' user password and optionally the 'app' user password to use for messaging | Mandatory - a secret name must be set |
+| `queueManager.dev.secret.adminPasswordKey` | Secret key that contains the 'admin' user password    | Mandatory - a key must be set              |
+| `queueManager.dev.secret.appPasswordKey` | Secret key that contains the 'app' user password        | `nil` (no password required to connect an MQ client) |
+| `pki.keys`                      | An array of YAML objects that detail Kubernetes secrets containing TLS Certificates with private keys. See section titled "Supplying certificates to be used for TLS" for more details  | `[]` |
+| `pki.trust`                     | An array of YAML objects that detail Kubernetes secrets containing TLS Certificates. See section titled "Supplying certificates to be used for TLS" for more details  | `[]` |
 | `nameOverride`                  | Set to partially override the resource names used in this chart | `ibm-mq`                                   |
 | `livenessProbe.initialDelaySeconds` | The initial delay before starting the liveness probe. Useful for slower systems that take longer to start the Queue Manager. | 60 |
 | `livenessProbe.periodSeconds`   | How often to run the probe                                      | 10                                         |
@@ -138,10 +157,8 @@ The following table lists the configurable parameters of the `ibm-mqadvanced-ser
 | `readinessProbe.timeoutSeconds` | Number of seconds after which the probe times out               | 3                                          |
 | `readinessProbe.failureThreshold` | Minimum consecutive failures for the probe to be considered failed after having succeeded | 1              |
 | `log.format`                    | Error log format on container's console.  Either `json` or `basic` | `basic`                                 |
+| `log.debug`                     | Enables additional log output for debug purposes. | `false` |
 
 Specify each parameter using the `--set key=value[,key=value]` argument to `helm install`.
 
 Alternatively, a YAML file that specifies the values for the parameters can be provided while installing the chart.
-
-<!-- **If needed, include additional configuration information below. For example, maybe there are
-configuration options not required for installation but which could be useful for certain users.** -->

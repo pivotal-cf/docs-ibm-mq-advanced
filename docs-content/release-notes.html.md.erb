@@ -12,12 +12,21 @@ When you release a new version, add new release notes to this file, keeping the 
 
 These are release notes for IBM MQ Advanced for Developers for PCF.
 
-##<a id="ver"></a> v3.0.1
+## <a id="ver"></a> v4.0.0
 
-**Release Date:** May 31, 2019
+**Release Date:** July 1, 2019
 
 Features included in this release:
 
-* Create a single MQ server (Queue Manager) using a StatefulSet with exactly one replica. Kubernetes will ensure that if it fails for some reason, it will be restarted, possibly on a different worker node.
-* Create a Service. This is used to ensure that MQ client applications have a consistent IP address to connect to, regardless of where the Queue Manager is actually running.
-* Create a Secret. This is used to store passwords used for the default developer configuration.
+* Create a single MQ server (Queue Manager) using a [StatefulSet](http://kubernetes.io/docs/concepts/abstractions/controllers/statefulsets/) with exactly one replica.  Kubernetes will ensure that if it fails for some reason, it will be restarted, possibly on a different worker node.
+* Create a [Service](https://kubernetes.io/docs/concepts/services-networking/service/). This is used to ensure that MQ client applications have a consistent IP address to connect to, regardless of where the Queue Manager is actually running.
+
+## Documentation
+
+- [What's new and changed in IBM MQ Version 9.1.x](https://www.ibm.com/support/knowledgecenter/en/SSFKSJ_9.1.0/com.ibm.mq.pro.doc/q113110_.htm)
+
+## Version History
+
+| Chart | Date | Kubernetes Required | Image(s) Supported | Breaking Changes | Details |
+| ----- | ---- | ------------ | ------------------ | ---------------- | ------- |
+| 4.0.0 | June 2019 | >= 1.11.0 | = MQ 9.1.2.0 | Initial PCF release | Initial PCF release |
