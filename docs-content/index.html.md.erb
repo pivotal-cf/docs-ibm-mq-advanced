@@ -1,5 +1,5 @@
 ---
-title: IBM® MQ Advanced for Developers for PCF (Beta)
+title: IBM® MQ Advanced for Developers for Pivotal Platform (Beta)
 owner: Partners
 ---
 
@@ -7,12 +7,12 @@ owner: Partners
 
 <p class="note warning">
 <strong>Warning: </strong>
-The IBM MQ Advanced for Developers for PCF integration is currently in beta and is intended for evaluation and test purposes only. 
-Do not use this product in a PCF production environment.
+The IBM MQ Advanced for Developers for Pivotal Platform integration is currently in beta and is intended for evaluation and test purposes only. 
+Do not use this product in a Pivotal Platform production environment.
 </p>
 
-This documentation describes IBM MQ Advanced for Developers for Pivotal Cloud Foundry (PCF). IBM MQ Advanced for Developers 
-for PCF enables users to deploy IBM MQ Queue Managers onto a Pivotal Container Service (PKS) environment.
+This documentation describes IBM MQ Advanced for Developers for Pivotal Platform. IBM MQ Advanced for Developers 
+for Pivotal Platform enables users to deploy IBM MQ Queue Managers onto a Pivotal Container Service (PKS) environment.
 
 ## <a id='overview'></a>Overview
 
@@ -23,14 +23,14 @@ Internet of Things (IoT), and on-premises environments.
 
 ## <a id='features'></a>Key Features
 
-IBM MQ Advanced for Developers for PCF will do the following:
+IBM MQ Advanced for Developers for Pivotal Platform will do the following:
 
 * Create a single MQ server (Queue Manager) using a [StatefulSet](http://kubernetes.io/docs/concepts/abstractions/controllers/statefulsets/) with exactly one replica.  Kubernetes will ensure that if it fails for some reason, it will be restarted, possibly on a different worker node.
 * Create a [Service](https://kubernetes.io/docs/concepts/services-networking/service/). This is used to ensure that MQ client applications have a consistent IP address to connect to, regardless of where the Queue Manager is actually running.
 
 ## <a id="snapshot"></a>Product Snapshot
 
-The following table provides version and version-support information about IBM MQ Advanced for Developers for PCF.
+The following table provides version and version-support information about IBM MQ Advanced for Developers for Pivotal Platform.
 
 <table class="nice">
     <th>Element</th>
@@ -59,13 +59,13 @@ The following table provides version and version-support information about IBM M
 
 ## <a id="reqs"></a>Requirements
 
-IBM MQ Advanced for Developers for PCF has the following requirements:
+IBM MQ Advanced for Developers for Pivotal Platform has the following requirements:
 
 + When installing PKS, ensure the `Disable DenyEscalatingExec` option is set to true when selecting a plan.
 
 ### <a id="recourcereqs"></a>Resource Requirements
 
-IBM MQ Advanced for Developers for PCF has the following resource requirements:
+IBM MQ Advanced for Developers for Pivotal Platform has the following resource requirements:
 
 + 0.5 CPU core
 
@@ -97,4 +97,4 @@ If you have a feature request, questions, or information about a bug, please rai
 
 ## <a id='license'></a>License
 
-Deploying the IBM MQ Advanced for Developers for PCF integration accepts the [IBM MQ Advanced for Developers License](http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?la_formnum=Z125-3301-14&li_formnum=L-APIG-AVCJ4S)
+Deploying the IBM MQ Advanced for Developers for Pivotal Platform integration accepts the [IBM MQ Advanced for Developers License](http://www14.software.ibm.com/cgi-bin/weblap/lap.pl?la_formnum=Z125-3301-14&li_formnum=L-APIG-AVCJ4S)

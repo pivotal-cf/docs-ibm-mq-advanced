@@ -1,15 +1,15 @@
 ---
-title: Installing and Configuring IBM® MQ Advanced for Developers for PCF (PKS)
+title: Installing and Configuring IBM® MQ Advanced for Developers for Pivotal Platform (PKS)
 owner: Partners
 ---
 
 <strong><%= modified_date %></strong>
 
-This topic describes how to install and configure IBM MQ Advanced for Developers for PCF on Pivotal Container Service (PKS).
+This topic describes how to install and configure IBM MQ Advanced for Developers for Pivotal Platform on Pivotal Container Service (PKS).
 
-## <a id='download'></a> Download IBM MQ Advanced for Developers for PCF (PKS)
+## <a id='download'></a> Download IBM MQ Advanced for Developers for Pivotal Platform (PKS)
 
-1. Download the IBM MQ Advanced for Developers for PCF Helm chart (`ibm-mqadvanced-server-dev-X.X.X.tgz`)
+1. Download the IBM MQ Advanced for Developers for Pivotal Platform Helm chart (`ibm-mqadvanced-server-dev-X.X.X.tgz`)
 2. (Optional) Download the IBM MQ Advanced Server Image (`mqadvanced-server-dev-X.X.X.X-amd64.tar`) 
 from [Pivotal Network](https://network.pivotal.io/) 
 <p class="note"><strong>Note:</strong> The Helm chart will automatically pull the latest version of the image from Docker Hub
@@ -26,7 +26,7 @@ $ docker push registry.mycompany.com/<IMAGE_NAME>.tar
 
 ## <a id='access'></a> Obtain Cluster Access
 
-A Pivotal Container Service (PKS) cluster is required to install IBM MQ Advanced for Developers for PCF. To obtain access to your cluster, do the following:
+A Pivotal Container Service (PKS) cluster is required to install IBM MQ Advanced for Developers for Pivotal Platform. To obtain access to your cluster, do the following:
 
 1. Log in to PKS: `pks login -a <pks-url> -u <username> -p <password> -k`
 1. Update your `~/.kube/config`: `pks get-credentials <cluster-name>`
@@ -34,7 +34,7 @@ A Pivotal Container Service (PKS) cluster is required to install IBM MQ Advanced
 
 ## <a id='helm-server'></a> Install Helm Server
 
-IBM MQ Advanced for Developers for PCF is distributed as a Helm chart. To install Helm on your PKS cluster, create a `initialize_helm_rbac.yaml` file as follows:
+IBM MQ Advanced for Developers for Pivotal Platform is distributed as a Helm chart. To install Helm on your PKS cluster, create a `initialize_helm_rbac.yaml` file as follows:
 
 ```yaml
 apiVersion: v1
